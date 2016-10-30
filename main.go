@@ -9,6 +9,7 @@ import (
 	"bitbucket.org/mattesilver/etsygw/handlers"
 	"bitbucket.org/mattesilver/etsygw/handlers/oauth"
 	"os"
+	"io"
 )
 
 func main() {
@@ -58,5 +59,7 @@ func main() {
 		proxy.OnResponse().DoFunc(handlers.LogOut)
 	}
 
-	log.Fatal(http.ListenAndServe(*addr, proxy))
+	//http.Handle("/override/", myserver{})
+	http.Handle("/", proxy)
+	log.Fatal(http.ListenAndServe(*addr, nil))
 }
