@@ -9,7 +9,6 @@ import (
 	"bitbucket.org/mattesilver/etsygw/handlers"
 	"bitbucket.org/mattesilver/etsygw/handlers/oauth"
 	"os"
-	"io"
 )
 
 func main() {
