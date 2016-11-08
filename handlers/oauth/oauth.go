@@ -1,34 +1,31 @@
 package oauth
 
 import (
-	"github.com/drone/go-bitbucket/oauth1"
 	"github.com/elazarl/goproxy"
 	"net/http"
-	"strings"
 )
 
 type signer struct {
-	token    oauth1.Token
-	consumer *oauth1.Consumer
+	client *http.Client
 }
 
 func (s *signer) Handle(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-	req.URL.Host = strings.TrimSuffix(req.URL.Host, ":443")
+	if _, has := req.Header["oauth_signature"]; has {
+		return req, nil
+	}
 
 	ctx.Logf("OAuth1.0a Sign %v", req.URL)
 
-	err := s.consumer.Sign(req, s.token)
+	resp, err := s.client.Do(req)
+
 	if err != nil {
-		panic(err)
+		resp = goproxy.NewResponse(req, "", 500, "")
+		resp.Header = http.Header{}
 	}
 
-	return req, nil
+	return req, resp
 }
 
-func New(token oauth1.Token, consumer *oauth1.Consumer) *signer {
-	return &signer{token, consumer}
-}
-
-func NewConsumer(consumerKey, consumerSecret string) *oauth1.Consumer {
-	return &oauth1.Consumer{ConsumerKey: consumerKey, ConsumerSecret: consumerSecret}
+func New(client *http.Client) *signer {
+	return &signer{client}
 }

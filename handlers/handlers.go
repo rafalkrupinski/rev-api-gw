@@ -2,45 +2,55 @@ package handlers
 
 import (
 	"github.com/elazarl/goproxy"
+	ht "../http"
 	"net/http"
 	"os"
 )
 
-func LogIn(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-	ctx.Logf("%+v", req)
-	return req, nil
-}
-
-func LogOut(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-	ctx.Logf("%+v", resp)
-	return resp
-}
-
-const https = "https"
-
 func UpgradeToHttps(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 	scheme := req.URL.Scheme
-	if https != scheme {
-		ctx.Logf("scheme: %v -> %v", scheme, https)
-		req.URL.Scheme = https
+	if ht.SCHEME_HTTPS != scheme {
+		ctx.Logf("scheme: %v -> %v", scheme, ht.SCHEME_HTTPS)
+		req.URL.Scheme = ht.SCHEME_HTTPS
 	} else {
 		ctx.Logf("scheme: %v", scheme)
 	}
 	return req, nil
 }
 
-const kVia = "Via"
+var via *ht.ViaAdder
 
-var host, _ = os.Hostname()
-
-var via = "EtsyGW 1 " + host
+func init() {
+	var host, _ = os.Hostname()
+	via = ht.NewViaAdder("RevApiGW 1 " + host)
+}
 
 func ViaIn(req *http.Request, _ *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-	req.Header.Add(kVia, via)
+	via.Alter(&req.Header)
 	return req, nil
 }
 
 func ViaOut(resp *http.Response, _ *goproxy.ProxyCtx) *http.Response {
-	resp.Header.Add(kVia, via)
+	via.Alter(&resp.Header)
 	return resp
+}
+
+func Pass(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+	resp, err := ctx.RoundTrip(req)
+	if err != nil {
+		ctx.Logf("Error", err)
+	}
+
+	return req, resp
+}
+
+func RespondWith(contentType string, status int, body string) goproxy.FuncReqHandler {
+	return func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		return r, goproxy.NewResponse(r, contentType, status, body)
+	}
+}
+
+func CleanupHandler(req*http.Request, _*goproxy.ProxyCtx) (*http.Request, *http.Response) {
+	ht.CleanupRequest(req)
+	return req, nil
 }

@@ -1,13 +1,15 @@
 package main
 
 import (
+	"golang.org/x/net/context"
 	"flag"
-	"log"
-	"net/http"
-	"github.com/drone/go-bitbucket/oauth1"
 	"github.com/elazarl/goproxy"
-	"bitbucket.org/mattesilver/etsygw/handlers"
-	"bitbucket.org/mattesilver/etsygw/handlers/oauth"
+	"./handlers"
+	"net/http"
+	"./httplog"
+	"log"
+	"./handlers/oauth"
+	"github.com/dghubble/oauth1"
 	"os"
 )
 
@@ -38,27 +40,52 @@ func main() {
 		panic("No consumer secret")
 	}
 
-	// handle incoming https connections with MITM
-	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+	allRequests := proxy.OnRequest()
+	allRequests.DoFunc(handlers.CleanupHandler)
 
-	proxy.OnRequest().DoFunc(handlers.ViaIn)
+	allRequests.DoFunc(handlers.ViaIn)
 	proxy.OnResponse().DoFunc(handlers.ViaOut)
 
-	etsyReq := proxy.OnRequest(goproxy.ReqHostIs("openapi.etsy.com:443", "openapi.etsy.com"))
+	isEtsy := goproxy.ReqHostIs("openapi.etsy.com:443", "openapi.etsy.com")
 
-	// handle incoming http connections
+	proxy.OnRequest(Not(isEtsy)).DoFunc(handlers.RespondWith(goproxy.ContentTypeText, http.StatusForbidden, "Forbidden Host"))
+
+	etsyReq := proxy.OnRequest(isEtsy)
+	// handle incoming https connections with MITM
+	allRequests.HandleConnect(goproxy.AlwaysMitm)
+
 	etsyReq.DoFunc(handlers.UpgradeToHttps)
 
-	consumer := oauth.NewConsumer(*consumerKey, *consumerSecret)
-	token := oauth1.NewAccessToken(*tokenKey, *tokenSecret, nil)
-	etsyReq.Do(oauth.New(token, consumer))
+	config := oauth1.NewConfig(*consumerKey, *consumerSecret)
+	token := oauth1.NewToken(*tokenKey, *tokenSecret)
 
-	if *verbose {
-		proxy.OnRequest().DoFunc(handlers.LogIn)
-		proxy.OnResponse().DoFunc(handlers.LogOut)
-	}
+	etsyReq.Do(NewClient(config, token, *verbose))
 
 	//http.Handle("/override/", myserver{})
-	http.Handle("/", proxy)
-	log.Fatal(http.ListenAndServe(*addr, nil))
+	//http.Handle("/", proxy)
+	//log.Fatal(http.ListenAndServe(*addr, nil))
+
+	// required to handle CONNECT
+	log.Fatal(http.ListenAndServe(*addr, proxy))
+}
+
+func NewClient(config*oauth1.Config, token *oauth1.Token, logging bool) (handler goproxy.ReqHandler) {
+	ctx := context.TODO()
+
+	if logging {
+		roundTripper := &httplog.LoggingRoundTripper{Super:http.DefaultTransport}
+		actualClient := &http.Client{Transport:roundTripper}
+		ctx = context.WithValue(ctx, oauth1.HTTPClient, actualClient)
+	}
+
+	client := config.Client(ctx, token)
+	handler = oauth.New(client)
+
+	return
+}
+
+func Not(f goproxy.ReqConditionFunc) goproxy.ReqConditionFunc {
+	return func(req *http.Request, ctx *goproxy.ProxyCtx) bool {
+		return !f(req, ctx)
+	}
 }
