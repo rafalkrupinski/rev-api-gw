@@ -97,6 +97,7 @@ func dump(body[]byte, h http.Header) (origBody io.ReadCloser, _ error) {
 	}
 	fmt.Println()
 	os.Stdout.Write(body)
+	fmt.Println()
 
 	return
 }
