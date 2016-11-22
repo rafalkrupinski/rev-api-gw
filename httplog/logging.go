@@ -3,19 +3,19 @@ package httplog
 import (
 	"bytes"
 	"compress/gzip"
-	ht "../http"
+	"fmt"
+	ht "github.com/rafalkrupinski/revapigw/http"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"fmt"
 )
 
 type LoggingRoundTripper struct {
 	Super http.RoundTripper
 }
 
-func (rt *LoggingRoundTripper)RoundTrip(r*http.Request) (*http.Response, error) {
+func (rt *LoggingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	dumpRequest(r)
 
 	res, err := rt.Super.RoundTrip(r)
@@ -30,7 +30,7 @@ func (rt *LoggingRoundTripper)RoundTrip(r*http.Request) (*http.Response, error) 
 	return res, err
 }
 
-func dumpRequest(r *http.Request) (error) {
+func dumpRequest(r *http.Request) error {
 	fmt.Printf("[%v] %v %v %v\n", r.URL.Scheme, r.Method, r.URL.RequestURI(), r.Proto)
 	fmt.Printf("Host: %v\n", r.Host)
 
@@ -76,7 +76,7 @@ func dumpResponse(r *http.Response) error {
 	return nil
 }
 
-func dump(body[]byte, h http.Header) (origBody io.ReadCloser, _ error) {
+func dump(body []byte, h http.Header) (origBody io.ReadCloser, _ error) {
 	origBody = ReadCloser{bytes.NewReader(body)}
 
 	if h.Get(ht.CONTENT_ENC) == "gzip" {

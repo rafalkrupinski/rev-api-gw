@@ -1,15 +1,15 @@
 package main
 
 import (
-	"golang.org/x/net/context"
 	"flag"
-	"github.com/elazarl/goproxy"
-	"./handlers"
-	"net/http"
-	"./httplog"
-	"log"
-	"./handlers/oauth"
 	"github.com/dghubble/oauth1"
+	"github.com/elazarl/goproxy"
+	"github.com/rafalkrupinski/revapigw/handlers"
+	"github.com/rafalkrupinski/revapigw/handlers/oauth"
+	"github.com/rafalkrupinski/revapigw/httplog"
+	"golang.org/x/net/context"
+	"log"
+	"net/http"
 	"os"
 )
 
@@ -69,12 +69,12 @@ func main() {
 	log.Fatal(http.ListenAndServe(*addr, proxy))
 }
 
-func NewClient(config*oauth1.Config, token *oauth1.Token, logging bool) (handler goproxy.ReqHandler) {
+func NewClient(config *oauth1.Config, token *oauth1.Token, logging bool) (handler goproxy.ReqHandler) {
 	ctx := context.TODO()
 
 	if logging {
-		roundTripper := &httplog.LoggingRoundTripper{Super:http.DefaultTransport}
-		actualClient := &http.Client{Transport:roundTripper}
+		roundTripper := &httplog.LoggingRoundTripper{Super: http.DefaultTransport}
+		actualClient := &http.Client{Transport: roundTripper}
 		ctx = context.WithValue(ctx, oauth1.HTTPClient, actualClient)
 	}
 

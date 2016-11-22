@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/elazarl/goproxy"
-	ht "../http"
+	ht "github.com/rafalkrupinski/revapigw/http"
 	"net/http"
 	"os"
 )
@@ -50,7 +50,7 @@ func RespondWith(contentType string, status int, body string) goproxy.FuncReqHan
 	}
 }
 
-func CleanupHandler(req*http.Request, _*goproxy.ProxyCtx) (*http.Request, *http.Response) {
+func CleanupHandler(req *http.Request, _ *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 	ht.CleanupRequest(req)
 	return req, nil
 }
