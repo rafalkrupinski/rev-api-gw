@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	ht "github.com/rafalkrupinski/revapigw/http"
+	ht "github.com/rafalkrupinski/rev-api-gw/http"
 	"io"
 	"io/ioutil"
 	"net/http"
