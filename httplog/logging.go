@@ -16,7 +16,7 @@ type LoggingRoundTripper struct {
 }
 
 func (rt *LoggingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	dumpRequest(r)
+	DumpRequest(r)
 
 	res, err := rt.Super.RoundTrip(r)
 	if err != nil {
@@ -24,13 +24,13 @@ func (rt *LoggingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error
 	}
 
 	if res != nil {
-		dumpResponse(res)
+		DumpResponse(res)
 	}
 
 	return res, err
 }
 
-func dumpRequest(r *http.Request) error {
+func DumpRequest(r *http.Request) error {
 	fmt.Printf("[%v] %v %v %v\n", r.URL.Scheme, r.Method, r.URL.RequestURI(), r.Proto)
 	fmt.Printf("Host: %v\n", r.Host)
 
@@ -54,7 +54,7 @@ func dumpRequest(r *http.Request) error {
 	return nil
 }
 
-func dumpResponse(r *http.Response) error {
+func DumpResponse(r *http.Response) error {
 	fmt.Printf("%v\n", r.Status)
 
 	body, err := ioutil.ReadAll(r.Body)
