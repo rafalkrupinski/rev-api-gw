@@ -34,49 +34,44 @@ func DumpRequest(r *http.Request) error {
 	fmt.Printf("[%v] %v %v %v\n", r.URL.Scheme, r.Method, r.URL.RequestURI(), r.Proto)
 	fmt.Printf("Host: %v\n", r.Host)
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return err
-	}
-
-	err = r.Body.Close()
-	if err != nil {
-		return err
-	}
-
-	origBody, err := dump(body, r.Header)
-
-	if err != nil {
-		return err
-	}
-
-	r.Body = origBody
-	return nil
+	body, err := dump(r.Body, r.Header)
+	r.Body = body
+	return err
 }
 
 func DumpResponse(r *http.Response) error {
 	fmt.Printf("%v\n", r.Status)
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return err
-	}
-
-	err = r.Body.Close()
-	if err != nil {
-		return err
-	}
-
-	origBody, err := dump(body, r.Header)
-	if err != nil {
-		return err
-	}
-
-	r.Body = origBody
-	return nil
+	body, err := dump(r.Body, r.Header)
+	r.Body = body
+	return err
 }
 
-func dump(body []byte, h http.Header) (origBody io.ReadCloser, _ error) {
+func dump(body io.ReadCloser, h http.Header) (io.ReadCloser, error) {
+	if body == nil {
+		return nil, nil
+	}
+
+	buf, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+
+	err = body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	origBody, err := doDump(buf, h)
+
+	if err != nil {
+		return nil, err
+	} else {
+		return origBody, nil
+	}
+}
+
+func doDump(body []byte, h http.Header) (origBody io.ReadCloser, _ error) {
 	origBody = ReadCloser{bytes.NewReader(body)}
 
 	if h.Get(ht.CONTENT_ENC) == "gzip" {
