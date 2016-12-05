@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/elazarl/goproxy"
-	ht "github.com/rafalkrupinski/revapigw/http"
+	ht "github.com/rafalkrupinski/rev-api-gw/http"
 	"net/http"
 	"os"
 )
