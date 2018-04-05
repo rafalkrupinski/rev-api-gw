@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"github.com/rafalkrupinski/rev-api-gw/util"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
@@ -25,7 +26,7 @@ func (c *EndpointConfig) Sanitize() error {
 }
 
 type Endpoint struct {
-	Target *YamlUrl
+	Target *util.URL
 	Oauth1 *Oauth1
 }
 

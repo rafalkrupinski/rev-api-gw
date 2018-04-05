@@ -52,7 +52,7 @@ var exampleValue = `endpoints:
 func createEndpointConfig() *EndpointConfig {
 	cfg := &EndpointConfig{Endpoints: make(map[string]*Endpoint)}
 	cfg.Endpoints["etsy"] = &Endpoint{
-		Target: &YamlUrl{util.MustParseUrl("https://httpbin.org/get")},
+		Target: util.MustParseURL("https://httpbin.org/get"),
 		Oauth1: &Oauth1{
 			ConsumerKey:    "ck",
 			ConsumerSecret: "cs",

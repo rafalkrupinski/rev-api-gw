@@ -8,15 +8,12 @@ import (
 )
 
 const (
-	//CONTENT_TYPE    = "Content-Type"
-	//CONTENT_LEN     = "Content-Length"
-	CONTENT_ENC = "Content-Encoding"
-	VIA         = "Via"
-	//DEFAULT_TIMEOUT = time.Second * 30
-	SCHEME_HTTP     = "http"
-	PORT_HTTP       = 80
-	SCHEME_HTTPS    = "https"
-	PORT_HTTPS      = 443
+	CONTENT_ENC  = "Content-Encoding"
+	VIA          = "Via"
+	SCHEME_HTTP  = "http"
+	PORT_HTTP    = 80
+	SCHEME_HTTPS = "https"
+	PORT_HTTPS   = 443
 )
 
 func CleanupRequest(req *http.Request) {

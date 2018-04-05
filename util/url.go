@@ -2,10 +2,40 @@ package util
 
 import "net/url"
 
-func MustParseUrl(rawurl string) *url.URL {
+// Successfully parse net.URL or panic
+func MustParseNetURL(rawurl string) *url.URL {
 	parsed, err := url.Parse(rawurl)
 	if err != nil {
 		panic(err)
 	}
 	return parsed
+}
+
+// Successfully parse URL or panic
+func MustParseURL(rawurl string) *URL {
+	return &URL{MustParseNetURL(rawurl)}
+}
+
+// Use in structs instead of url.URL for YAML marshaling
+type URL struct{ *url.URL }
+
+func (u *URL) MarshalYAML() (interface{}, error) {
+	return u.URL.String(), nil
+}
+
+func (u *URL) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var raw string
+	err := unmarshal(&raw)
+	if err != nil {
+		return err
+	}
+	u.URL, err = url.Parse(raw)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *URL) String() string {
+	return u.URL.String()
 }

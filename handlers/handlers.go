@@ -2,7 +2,6 @@ package handlers
 
 import (
 	ht "github.com/rafalkrupinski/rev-api-gw/http"
-	"github.com/rafalkrupinski/rev-api-gw/httplog"
 	"io"
 	"log"
 	"net/http"
@@ -84,11 +83,13 @@ func (c *HandlerChain) ServeHTTP(to http.ResponseWriter, req *http.Request) {
 	request, response, err := c.HandleRequest(req)
 
 	if err != nil {
-		response = errorToResponse(err)
+		http.Error(to, err.Error(), 500)
+		return
 	}
 
 	if response == nil {
-		log.Panicf("Handler chain didn't return response for %s", req.URL)
+		log.Printf("request handler chain didn't return response for %s", req.URL)
+		http.Error(to, "nil response", 500)
 	}
 
 	if request == nil {
@@ -96,35 +97,16 @@ func (c *HandlerChain) ServeHTTP(to http.ResponseWriter, req *http.Request) {
 	}
 
 	response = c.HandleResponse(req, response)
-
-	if err != nil {
-		http.Error(to, err.Error(), 500)
-	} else {
-		writeResponse(response, to)
+	if response == nil {
+		http.Error(to, "response handler chain returned nil response", 500)
+		return
 	}
-}
 
-func errorToResponse(err error) (resp *http.Response) {
-	resp = &http.Response{Header: http.Header{}, StatusCode: 500}
-	resp.Header.Set("Content-Type", "text/plain; charset=utf-8")
-	resp.Header.Set("X-Content-Type-Options", "nosniff")
-	resp.Body = httplog.NewReadCloserFromString(err.Error())
-	return
+	writeResponse(response, to)
 }
 
 func writeResponse(resp *http.Response, w http.ResponseWriter) {
-	origBody := resp.Body
-	defer origBody.Close()
 	log.Printf("Copying response to client %v [%d]", resp.Status, resp.StatusCode)
-	// http.ResponseWriter will take care of filling the correct response length
-	// Setting it now, might impose wrong value, contradicting the actual new
-	// body the user returned.
-	// We keep the original body to remove the header only if things changed.
-	// This will prevent problems with HEAD requests where there's no body, yet,
-	// the Content-Length header should be set.
-	if origBody != resp.Body {
-		resp.Header.Del("Content-Length")
-	}
 	copyHeaders(w.Header(), resp.Header)
 	w.WriteHeader(resp.StatusCode)
 	nr, err := io.Copy(w, resp.Body)
@@ -135,7 +117,7 @@ func writeResponse(resp *http.Response, w http.ResponseWriter) {
 }
 
 func copyHeaders(dst, src http.Header) {
-	for k, _ := range dst {
+	for k := range dst {
 		dst.Del(k)
 	}
 	for k, vs := range src {
