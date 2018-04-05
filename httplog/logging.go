@@ -3,48 +3,34 @@ package httplog
 import (
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	ht "github.com/rafalkrupinski/rev-api-gw/http"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
-	"os"
+	"strings"
 )
 
-type LoggingRoundTripper struct {
-	Super http.RoundTripper
+func DumpRequest(r *http.Request) (*http.Request, *http.Response, error) {
+	log.Printf("[%v] %v %v %v\n", r.URL.Scheme, r.Method, r.URL.RequestURI(), r.Proto)
+	log.Printf("Host: %v\n", r.Host)
+
+	log.Printf("url:%v", r.URL.String())
+
+	body, err := dump(r.Body, r.Header)
+	r.Body = body
+	return nil, nil, err
 }
 
-func (rt *LoggingRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	DumpRequest(r)
+func DumpResponse(_ *http.Request, r *http.Response) *http.Response {
+	log.Printf("%v\n", r.Status)
 
-	res, err := rt.Super.RoundTrip(r)
+	body, err := dump(r.Body, r.Header)
 	if err != nil {
-		return nil, err
+		log.Println(err)
 	}
-
-	if res != nil {
-		DumpResponse(res)
-	}
-
-	return res, err
-}
-
-func DumpRequest(r *http.Request) error {
-	fmt.Printf("[%v] %v %v %v\n", r.URL.Scheme, r.Method, r.URL.RequestURI(), r.Proto)
-	fmt.Printf("Host: %v\n", r.Host)
-
-	body, err := dump(r.Body, r.Header)
 	r.Body = body
-	return err
-}
-
-func DumpResponse(r *http.Response) error {
-	fmt.Printf("%v\n", r.Status)
-
-	body, err := dump(r.Body, r.Header)
-	r.Body = body
-	return err
+	return nil
 }
 
 func dump(body io.ReadCloser, h http.Header) (io.ReadCloser, error) {
@@ -87,12 +73,12 @@ func doDump(body []byte, h http.Header) (origBody io.ReadCloser, _ error) {
 
 	for k, v := range h {
 		for _, h := range v {
-			fmt.Printf("%v: %v\n", k, h)
+			log.Printf("%v: %v\n", k, h)
 		}
 	}
-	fmt.Println()
-	os.Stdout.Write(body)
-	fmt.Println()
+	log.Println("Body follows:")
+	log.Println(string(body))
+	log.Println(":Body ended")
 
 	return
 }
@@ -103,4 +89,8 @@ type ReadCloser struct {
 
 func (ReadCloser) Close() error {
 	return nil
+}
+
+func NewReadCloserFromString(s string) io.ReadCloser {
+	return &ReadCloser{Reader: strings.NewReader(s)}
 }

@@ -1,8 +1,20 @@
 Reverse API Gateway
 ======
 
-Currently works  only with etsy.com -  has hardcoded addresses and supports only non-expiring OAuth 1.0 token.
+Expose external HTTP/S APIs as insecure local services. Free client code from the burden of checking the SSL certificates and handling OAuth details.
 
-Key, token and secrets are passed as parameters
+Features
+- Configurable from yaml file
+- Multiple (outgoing) endpoints and credentials
+- Support for OAuth 1a
+- Support for OAuth 2 (TODO)
+- Live updating security tokens (TODO)
 
-The idea for this projest is that it should accept configuration and key/token/secrets updates using simple RESTful API or via KV store.
+Limitations
+- No HTTPS
+- Single listen address/port
+- No credentials checking for incoming connections
+
+Maybe:
+- Transparent proxy
+- Work in serverless environment
