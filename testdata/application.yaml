@@ -1,0 +1,5 @@
+endpoints:
+  /bin/:
+    target: https://httpbin.org/anything/
+  /bin:
+    target: https://httpbin.org/anything
