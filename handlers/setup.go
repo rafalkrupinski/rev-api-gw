@@ -13,9 +13,9 @@ type HandlerRegistry interface {
 	Handle(pattern string, handler http.Handler)
 }
 
-func Configure(container HandlerRegistry, cfg *config.EndpointConfig, rt http.RoundTripper, verbose bool) {
-	for path, endpoint := range cfg.Endpoints {
-		configureEndpointChain(endpoint, rt, container, path, verbose)
+func Configure(from *config.AppConfig, container HandlerRegistry, rt http.RoundTripper) {
+	for path, endpoint := range from.Configuration.Endpoints {
+		configureEndpointChain(endpoint, rt, container, path, from.Verbose)
 	}
 }
 

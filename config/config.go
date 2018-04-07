@@ -3,8 +3,6 @@ package config
 import (
 	"errors"
 	"github.com/rafalkrupinski/rev-api-gw/morego/moreurl"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 type EndpointConfig struct {
@@ -66,17 +64,4 @@ func (o *Oauth1) Sanitize() error {
 		return errors.New("missing token_secret")
 	}
 	return nil
-}
-
-func ReadEndpointConfig(path string) (*EndpointConfig, error) {
-	buf, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	result := &EndpointConfig{}
-	err = yaml.UnmarshalStrict(buf, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, result.Sanitize()
 }

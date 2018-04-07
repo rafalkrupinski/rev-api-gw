@@ -17,7 +17,8 @@ func TestConfigure(t *testing.T) {
 
 	container := make(MockHandlerContainer)
 	roundTripper := &MockRoundTripper{Response: &http.Response{StatusCode: 200, Header: http.Header{}, Body: moreio.StrReadCloser(body)}}
-	Configure(container, createEndpointConfig(), roundTripper, false)
+	appConfig := &config.AppConfig{Configuration: createEndpointConfig()}
+	Configure(appConfig, container, roundTripper)
 
 	recorder := httptest.NewRecorder()
 

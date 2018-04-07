@@ -9,6 +9,7 @@ import (
 var via string
 
 func init() {
+	// TODO handle error
 	var host, _ = os.Hostname()
 	via = "HTTP/1.1 RevApiGW 1 " + host
 }

@@ -4,46 +4,27 @@ import (
 	"flag"
 	"github.com/rafalkrupinski/rev-api-gw/config"
 	"github.com/rafalkrupinski/rev-api-gw/handlers"
-	"gopkg.in/yaml.v2"
 	"log"
 	"net/http"
 	"os"
 )
 
 func main() {
-	verbose := flag.Bool("v", false, "should every proxy request be logged to stdout")
-	addr := flag.String("addr", ":8080", "proxy listen address")
-	usage := flag.Bool("h", false, "print help")
-	configPath := flag.String("config", "application.yaml", "path to configuration file")
+	appConfig, usage, err := config.ParseFlags()
+	if err != nil {
+		panic(err)
+	}
 
-	flag.Parse()
-
-	if *usage {
+	if usage {
 		flag.Usage()
 		os.Exit(0)
 	}
 
-	cfg, err := config.ReadEndpointConfig(*configPath)
-	if err != nil {
-		panic(err)
-	}
-	str, err := yaml.Marshal(GlobalConfig{cfg, *configPath, *verbose})
-	log.Println(string(str))
-
-	if *verbose {
-		log.Printf("Listening on %s", *addr)
-	}
+	appConfig.Dump()
 
 	serveMux := http.NewServeMux()
-	handlers.Configure(serveMux, cfg, http.DefaultTransport, *verbose)
+	handlers.Configure(appConfig, serveMux, http.DefaultTransport)
 
-	server := &http.Server{Addr: *addr, Handler: serveMux}
+	server := &http.Server{Addr: appConfig.Address, Handler: serveMux}
 	log.Fatal(server.ListenAndServe())
-}
-
-type GlobalConfig struct {
-	*config.EndpointConfig
-	// informative, for logging
-	Config  string
-	Verbose bool
 }
