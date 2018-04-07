@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"github.com/rafalkrupinski/rev-api-gw/config"
-	"github.com/rafalkrupinski/rev-api-gw/httplog"
-	"github.com/rafalkrupinski/rev-api-gw/util"
+	"github.com/rafalkrupinski/rev-api-gw/morego/moreio"
+	"github.com/rafalkrupinski/rev-api-gw/morego/moreurl"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"net/http"
@@ -16,7 +16,7 @@ func TestConfigure(t *testing.T) {
 	body := "My Mock HTTP Result"
 
 	container := make(MockHandlerContainer)
-	roundTripper := &MockRoundTripper{Response: &http.Response{StatusCode: 200, Header: http.Header{}, Body: httplog.NewReadCloserFromString(body)}}
+	roundTripper := &MockRoundTripper{Response: &http.Response{StatusCode: 200, Header: http.Header{}, Body: moreio.StrReadCloser(body)}}
 	Configure(container, createEndpointConfig(), roundTripper, false)
 
 	recorder := httptest.NewRecorder()
@@ -33,7 +33,7 @@ func TestConfigure(t *testing.T) {
 func createEndpointConfig() *config.EndpointConfig {
 	cfg := &config.EndpointConfig{Endpoints: make(map[string]*config.Endpoint)}
 	cfg.Endpoints["bin"] = &config.Endpoint{
-		Target: util.MustParseURL("https://httpbin.org/get"),
+		Target: moreurl.MustParseURL("https://httpbin.org/get"),
 	}
 	return cfg
 }

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/rafalkrupinski/rev-api-gw/util"
+	"github.com/rafalkrupinski/rev-api-gw/morego/moreurl"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 	"testing"
@@ -52,7 +52,7 @@ var exampleValue = `endpoints:
 func createEndpointConfig() *EndpointConfig {
 	cfg := &EndpointConfig{Endpoints: make(map[string]*Endpoint)}
 	cfg.Endpoints["etsy"] = &Endpoint{
-		Target: util.MustParseURL("https://httpbin.org/get"),
+		Target: moreurl.MustParseURL("https://httpbin.org/get"),
 		Oauth1: &Oauth1{
 			ConsumerKey:    "ck",
 			ConsumerSecret: "cs",

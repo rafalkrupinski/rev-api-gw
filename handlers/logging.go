@@ -1,14 +1,14 @@
-package httplog
+package handlers
 
 import (
 	"bytes"
 	"compress/gzip"
-	ht "github.com/rafalkrupinski/rev-api-gw/http"
+	"github.com/rafalkrupinski/rev-api-gw/morego/morehttp"
+	"github.com/rafalkrupinski/rev-api-gw/morego/moreio"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 )
 
 func DumpRequest(r *http.Request) (*http.Request, *http.Response, error) {
@@ -58,9 +58,9 @@ func dump(body io.ReadCloser, h http.Header) (io.ReadCloser, error) {
 }
 
 func doDump(body []byte, h http.Header) (origBody io.ReadCloser, _ error) {
-	origBody = ReadCloser{bytes.NewReader(body)}
+	origBody = moreio.BytesReadCloser(body)
 
-	if h.Get(ht.CONTENT_ENC) == "gzip" {
+	if h.Get(morehttp.CONTENT_ENC) == "gzip" {
 		reader, err := gzip.NewReader(bytes.NewReader(body))
 		if err != nil {
 			return nil, err
@@ -79,18 +79,5 @@ func doDump(body []byte, h http.Header) (origBody io.ReadCloser, _ error) {
 	log.Println("Body follows:")
 	log.Println(string(body))
 	log.Println(":Body ended")
-
 	return
-}
-
-type ReadCloser struct {
-	io.Reader
-}
-
-func (ReadCloser) Close() error {
-	return nil
-}
-
-func NewReadCloserFromString(s string) io.ReadCloser {
-	return &ReadCloser{Reader: strings.NewReader(s)}
 }

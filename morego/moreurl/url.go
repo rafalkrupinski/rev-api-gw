@@ -1,4 +1,4 @@
-package util
+package moreurl
 
 import "net/url"
 
@@ -16,7 +16,8 @@ func MustParseURL(rawurl string) *URL {
 	return &URL{MustParseNetURL(rawurl)}
 }
 
-// Use in structs instead of url.URL for YAML marshaling
+// YAML marshalable replacement for url.URL
+// this could use url.URL as underlying type but the whole code gets more messy as we don't inherit its methods
 type URL struct{ *url.URL }
 
 func (u *URL) MarshalYAML() (interface{}, error) {
@@ -34,8 +35,4 @@ func (u *URL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 	return nil
-}
-
-func (u *URL) String() string {
-	return u.URL.String()
 }

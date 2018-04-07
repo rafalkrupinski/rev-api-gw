@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	ht "github.com/rafalkrupinski/rev-api-gw/http"
+	"github.com/rafalkrupinski/rev-api-gw/morego/morehttp"
 	"net/http"
 	"os"
 )
@@ -14,11 +14,11 @@ func init() {
 }
 
 func ViaIn(req *http.Request) (*http.Request, *http.Response, error) {
-	req.Header.Add(ht.VIA, via)
+	req.Header.Add(morehttp.VIA, via)
 	return req, nil, nil
 }
 
 func ViaOut(_ *http.Request, resp *http.Response) *http.Response {
-	resp.Header.Add(ht.VIA, via)
+	resp.Header.Add(morehttp.VIA, via)
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/rafalkrupinski/rev-api-gw/config"
 	"github.com/rafalkrupinski/rev-api-gw/handlers"
+	"gopkg.in/yaml.v2"
 	"log"
 	"net/http"
 	"os"
@@ -26,6 +27,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	str, err := yaml.Marshal(GlobalConfig{cfg, *configPath, *verbose})
+	log.Println(string(str))
 
 	if *verbose {
 		log.Printf("Listening on %s", *addr)
@@ -36,4 +39,11 @@ func main() {
 
 	server := &http.Server{Addr: *addr, Handler: serveMux}
 	log.Fatal(server.ListenAndServe())
+}
+
+type GlobalConfig struct {
+	*config.EndpointConfig
+	// informative, for logging
+	Config  string
+	Verbose bool
 }

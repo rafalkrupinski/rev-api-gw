@@ -3,7 +3,6 @@ package handlers
 import (
 	"github.com/dghubble/oauth1"
 	"github.com/rafalkrupinski/rev-api-gw/config"
-	"github.com/rafalkrupinski/rev-api-gw/httplog"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
@@ -39,8 +38,8 @@ func configureVerbosity(c *HandlerChain, verbose bool) {
 		return
 	}
 	log.Println("Verbose=true")
-	c.AddRequestHandlerFunc(httplog.DumpRequest)
-	c.AddResponseHandlerFunc(httplog.DumpResponse)
+	c.AddRequestHandlerFunc(DumpRequest)
+	c.AddResponseHandlerFunc(DumpResponse)
 }
 
 func configureEndpoint(path string, config *config.Endpoint, chain *HandlerChain, rt http.RoundTripper) {

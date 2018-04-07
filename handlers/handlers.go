@@ -1,14 +1,32 @@
 package handlers
 
 import (
-	ht "github.com/rafalkrupinski/rev-api-gw/http"
+	"github.com/rafalkrupinski/rev-api-gw/morego/morehttp"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
 func CleanupHandler(req *http.Request) (*http.Request, *http.Response, error) {
-	ht.CleanupRequest(req)
+	addr := req.URL
+
+	if req.RequestURI != "" {
+		addr, _ = url.Parse(req.RequestURI)
+		req.RequestURI = ""
+	}
+
+	if addr.Host == "" && req.Host != "" {
+		addr.Host = req.Host
+	}
+
+	if addr.Scheme == morehttp.SCHEME_HTTP {
+		strings.TrimSuffix(addr.Host, ":"+strconv.Itoa(morehttp.PORT_HTTP))
+	} else if addr.Scheme == morehttp.SCHEME_HTTPS {
+		strings.TrimSuffix(addr.Host, ":"+strconv.Itoa(morehttp.PORT_HTTPS))
+	}
 	return nil, nil, nil
 }
 

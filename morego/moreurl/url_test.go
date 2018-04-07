@@ -1,4 +1,4 @@
-package util
+package moreurl
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -41,4 +41,12 @@ func TestURL_MustParseUrl_PanicsOnInvalidUrl(t *testing.T) {
 	assert.Panics(t, func() {
 		MustParseNetURL("*:")
 	})
+}
+
+func TestURL_String(t *testing.T) {
+	parsed, err := url.Parse(myUrl)
+	assert.NoError(t, err)
+	u := &URL{URL: parsed}
+
+	assert.Equal(t, myUrl, u.String())
 }

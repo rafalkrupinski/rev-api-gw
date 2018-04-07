@@ -2,7 +2,7 @@ package config
 
 import (
 	"errors"
-	"github.com/rafalkrupinski/rev-api-gw/util"
+	"github.com/rafalkrupinski/rev-api-gw/morego/moreurl"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
@@ -26,7 +26,7 @@ func (c *EndpointConfig) Sanitize() error {
 }
 
 type Endpoint struct {
-	Target *util.URL
+	Target *moreurl.URL
 	Oauth1 *Oauth1
 }
 
