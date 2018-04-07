@@ -40,7 +40,7 @@ func TestUnmarshalEmpty(t *testing.T) {
 }
 
 var exampleValue = `endpoints:
-  etsy:
+  bin:
     target: https://httpbin.org/get
     oauth1:
       consumer_key: ck
@@ -51,7 +51,7 @@ var exampleValue = `endpoints:
 
 func createEndpointConfig() *EndpointConfig {
 	cfg := &EndpointConfig{Endpoints: make(map[string]*Endpoint)}
-	cfg.Endpoints["etsy"] = &Endpoint{
+	cfg.Endpoints["bin"] = &Endpoint{
 		Target: moreurl.MustParseURL("https://httpbin.org/get"),
 		Oauth1: &Oauth1{
 			ConsumerKey:    "ck",

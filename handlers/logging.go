@@ -11,6 +11,14 @@ import (
 	"net/http"
 )
 
+func configureVerbosity(c *HandlerChain, verbose bool) {
+	if !verbose {
+		return
+	}
+	c.AddRequestHandlerFunc(DumpRequest)
+	c.AddResponseHandlerFunc(DumpResponse)
+}
+
 func DumpRequest(r *http.Request) (*http.Request, *http.Response, error) {
 	log.Printf("[%v] %v %v %v\n", r.URL.Scheme, r.Method, r.URL.RequestURI(), r.Proto)
 	log.Printf("Host: %v\n", r.Host)
